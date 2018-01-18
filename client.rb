@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
 require 'filewatcher'
+require 'rest-client'
+
 run = true
+server_address = 'localhost:3000'
 def name(filename)
   a = filename.dup
   a.delete!("\n")
@@ -18,8 +21,11 @@ Filewatcher.new('files/').watch do |filename, event|
       run = true
     end
   elsif run
-    puts filename
-    puts event
+    if event.eql?('deleted')
+      RestClient.post "#{server_address}/file", type: event
+    else
+      RestClient.post "#{server_address}/file", file: File.new(filename), type: event
+    end
   else
     puts 'couldnt'
   end
